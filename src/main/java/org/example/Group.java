@@ -4,15 +4,17 @@ import lombok.Getter;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 public class Group {
-    private final Set<Line> lines;
+    private final Set<Line> lines = new HashSet<>();
+
+    public Group() {}
 
     public Group(Line firstLine) {
-        lines = new HashSet<>(List.of(firstLine));
+        lines.add(firstLine);
     }
 
     public boolean shouldContainLine(Line line) {
@@ -34,10 +36,20 @@ public class Group {
 
     @Override
     public String toString() {
-        return "Группа " + "\n" +
-                lines.stream()
-                .map(l -> l.toString())
-                .collect(Collectors.joining("\n"))
-                + "\n";
+        return "Group{" +
+                "lines=" + lines +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Group group)) return false;
+        return Objects.equals(lines, group.lines);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(lines);
     }
 }

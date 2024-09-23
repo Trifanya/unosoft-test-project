@@ -16,21 +16,22 @@ public class UnoSoftTask {
     private int maxLinesCount;
 
     public void solve(String inputFile, String outputFile) {
-        long startTimeMillis = System.currentTimeMillis();
         logger.info("Программа начала работу.");
+        long startTimeMillis = System.currentTimeMillis();
+
         Set<String> uniqueFileLines = new HashSet<>(FileProcessor.readFile(inputFile));
         uniqueFileLines = validateLines(uniqueFileLines);
 
         Grouper grouper = new Grouper();
         grouper.formGroups(uniqueFileLines);
 
-        countParameters(grouper.getGroups());
-
-        logger.info("Программа завершила работу.\n" +
-                "Время работы программы: " + (System.currentTimeMillis() - startTimeMillis) / 1000 + " секунд.");
+        computeAnswers(grouper.getGroups());
 
         List<String> result = generateResult(grouper.getGroups());
         FileProcessor.writeToFile(outputFile, result);
+
+        logger.info("Программа завершила работу.\n" +
+                "Время работы программы: " + (System.currentTimeMillis() - startTimeMillis) / 1000 + " секунд.");
     }
 
     private Set<String> validateLines(Set<String> lines) {
@@ -60,7 +61,7 @@ public class UnoSoftTask {
         return result;
     }
 
-    private void countParameters(Set<Group> groups) {
+    private void computeAnswers(Set<Group> groups) {
         groupCount = groups.size();
         singleLineGroupCount = groups.stream()
                 .filter(group -> group.size() == 1)
@@ -68,7 +69,7 @@ public class UnoSoftTask {
                 .size();
         maxLinesCount = groups.stream()
                 .max(Comparator.comparingInt(Group::size))
-                .get().size();
+                .orElseThrow(RuntimeException::new).size();
     }
 
     public static void main(String[] args) {

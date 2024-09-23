@@ -5,6 +5,7 @@ import lombok.Getter;
 import java.util.Arrays;
 import java.util.List;
 
+
 @Getter
 public class Line {
     private final List<String> elements;
@@ -30,5 +31,17 @@ public class Line {
     @Override
     public String toString() {
         return String.join(";", elements);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Line line)) return false;
+        return toString().equals(line.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
     }
 }
