@@ -2,8 +2,6 @@ package org.example;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,8 +9,6 @@ import java.util.stream.Collectors;
 @Getter
 @Setter
 public class Grouper {
-    public static Logger logger = LogManager.getLogger(Grouper.class);
-
     private final Set<Group> groups = new HashSet<>();
     private Set<Line> lineSet;
     private Map<String, List<Line>> repeats;
@@ -21,19 +17,24 @@ public class Grouper {
         lineSet = stringSet.stream()
                 .map(Line::new)
                 .collect(Collectors.toSet());
+
+        long startTime0 = System.currentTimeMillis();
         repeats = countRepeats2();
+        System.out.println("Время подсчета повторов: " + (System.currentTimeMillis() - startTime0) + " мс");
+
+        long startTime1 = System.currentTimeMillis();
         formSingleLineGroups();
+        System.out.println("Время формирования однострочных групп: " + (System.currentTimeMillis() - startTime1) + " мс");
+
+        long startTime2 = System.currentTimeMillis();
         repeats = repeats.entrySet().stream()
                 .filter(entry -> entry.getValue().size() != 1)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        formMultilineGroups();
-        /*while (!lineSet.isEmpty()) {
-            formNewGroup();
-        }*/
-    }
+        System.out.println("Время фильтрации мапы повторов: " + (System.currentTimeMillis() - startTime2) + " мс");
 
-    public Map<String, List<Line>> countRepeats2_public() {
-        return countRepeats2();
+        long startTime3 = System.currentTimeMillis();
+        formMultilineGroups();
+        System.out.println("Время формирования многострочных групп: " + (System.currentTimeMillis() - startTime3) + " мс");
     }
 
     private Map<String, List<Line>> countRepeats2() {
@@ -56,30 +57,6 @@ public class Grouper {
             }
         }
         return repeats;
-    }
-
-    /*private Map<String, Integer> countRepeats() {
-        Map<String, Integer> repeats = new HashMap<>();
-        for (Line line : lineSet) {
-            List<String> elements = line.getElements();
-            for (int i = 0; i < elements.size(); i++) {
-                String current = elements.get(i);
-                if (current.equals("\"\"")) {
-                    continue;
-                }
-                String currentWithIndex = current + "_" + i;
-                if (repeats.containsKey(currentWithIndex)) {
-                    repeats.put(currentWithIndex, repeats.get(currentWithIndex) + 1);
-                } else {
-                    repeats.put(currentWithIndex, 1);
-                }
-            }
-        }
-        return repeats;
-    }*/
-
-    public void formSingleLineGroups_public() {
-        formSingleLineGroups();
     }
 
     private void formSingleLineGroups() {
@@ -105,14 +82,9 @@ public class Grouper {
         lineSet.removeAll(linesToBeRemoved);
     }
 
-    public void formMultilineGroups_public() {
-        formMultilineGroups();
-    }
-
     private void formMultilineGroups() {
         Set<String> keySet = new HashSet<>(repeats.keySet());
         for (String key : keySet) {
-            //System.out.println("Элемент: " + key);
             List<Line> lineList = null;
             if (repeats.containsKey(key)) {
                 lineList = new ArrayList<>(repeats.get(key));
@@ -130,19 +102,15 @@ public class Grouper {
                 });
                 groups.add(newGroup);
             }
-            //System.out.println("Группа: " + newGroup);
         }
     }
 
     private List<Line> getLines(Line line) {
-        //System.out.println("Line: " + line);
         List<Line> lines = new ArrayList<>();
         List<String> elements = line.getElements();
         for (int i = 0; i < elements.size(); i++) {
             String element = elements.get(i);
-            //System.out.println("Element: " + element + "_" + i);
             List<Line> linesWithElement = repeats.get(element + "_" + i);
-            //System.out.println("Element lines: " + linesWithElement);
             if (linesWithElement != null && !linesWithElement.isEmpty()) {
                 repeats.remove(element + "_" + i);
                 linesWithElement.forEach(line1 -> {
@@ -151,30 +119,6 @@ public class Grouper {
                 });
             }
         }
-        //System.out.println("Lines: " + lines);
         return lines;
     }
-
-    /*private void formNewGroup() {
-        Group newGroup = new Group(lineSet.stream().findFirst().get());
-        groups.add(newGroup);
-        boolean continueSearching = true;
-        while (continueSearching) { // попробовать переписать
-            int initialGroupSize = newGroup.size();
-            lineSet = lineSet.stream()
-                    .filter(line -> {
-                        if (newGroup.shouldContainLine(line)) {
-                            newGroup.addLine(line);
-                            return false;
-                        }
-                        return true;
-                    }).collect(Collectors.toSet());
-
-            *//* Если после полного прохода по всем строкам размер группы
-            остался прежним, то формирование группы завершено. *//*
-            if (newGroup.size() == initialGroupSize) {
-                continueSearching = false;
-            }
-        }
-    }*/
 }

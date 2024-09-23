@@ -19,7 +19,10 @@ public class UnoSoftTask {
         logger.info("Программа начала работу.");
         long startTimeMillis = System.currentTimeMillis();
 
+        long startTime0 = System.currentTimeMillis();
         Set<String> uniqueFileLines = new HashSet<>(FileProcessor.readFile(inputFile));
+        System.out.println("Время чтения из файла: " + (System.currentTimeMillis() - startTime0) + " мс");
+
         uniqueFileLines = validateLines(uniqueFileLines);
 
         Grouper grouper = new Grouper();
@@ -28,7 +31,10 @@ public class UnoSoftTask {
         computeAnswers(grouper.getGroups());
 
         List<String> result = generateResult(grouper.getGroups());
+
+        long startTime1 = System.currentTimeMillis();
         FileProcessor.writeToFile(outputFile, result);
+        System.out.println("Время записи в файл: " + (System.currentTimeMillis() - startTime1) + " мс");
 
         logger.info("Программа завершила работу.\n" +
                 "Время работы программы: " + (System.currentTimeMillis() - startTimeMillis) / 1000 + " секунд.");

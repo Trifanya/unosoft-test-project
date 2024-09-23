@@ -30,6 +30,10 @@ public class Group {
         lines.add(line);
     }
 
+    public void addAllLines(List<Line> lines) {
+        this.lines.addAll(lines);
+    }
+
     public int size() {
         return lines.size();
     }
