@@ -1,114 +1,93 @@
 package dev.trifanya;
 
-import lombok.Getter;
-import lombok.Setter;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Getter
-@Setter
 public class GroupManager {
-    private final Set<Group> groups = new HashSet<>();
-    private Set<String[]> allLines = new HashSet<>();
-    private Map<String, List<String[]>> repeats;
 
-    public void formGroups(Set<String> stringSet) {
-        allLines = stringSet.stream()
-                .map(str -> str.split(";"))
-                .collect(Collectors.toSet());
-        repeats = countRepeats();
-        formSinglelineGroups();
+    public static Set<Group> formGroups(Set<String[]> allLines) {
+        Map<String, List<String[]>> repeats = countRepeats(allLines);
+        Set<Group> groups = new HashSet<>(formSinglelineGroups(allLines, repeats));
         repeats = repeats.entrySet().stream()
                 .filter(entry -> entry.getValue().size() != 1)
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-        formMultilineGroups();
+        groups.addAll(formMultilineGroups(repeats));
+        return groups;
     }
 
-    private Map<String, List<String[]>> countRepeats() {
-        repeats = new HashMap<>();
+    private static Map<String, List<String[]>> countRepeats(Set<String[]> allLines) {
+        Map<String, List<String[]>> elementRepeats = new HashMap<>();
         for (String[] line : allLines) {
             for (int i = 0; i < line.length; i++) {
                 if (!line[i].equals("\"\"")) {
                     String elementWithIndex = line[i] + "_" + i;
-                    if (repeats.containsKey(elementWithIndex)) {
-                        List<String[]> linesWithElement = repeats.get(elementWithIndex);
-                        linesWithElement.add(line);
-                        repeats.put(elementWithIndex, linesWithElement);
+                    if (elementRepeats.containsKey(elementWithIndex)) {
+                        elementRepeats.get(elementWithIndex).add(line);
                     } else {
-                        repeats.put(elementWithIndex, new ArrayList<>(Collections.singletonList(line)));
+                        elementRepeats.put(elementWithIndex, new ArrayList<>(Collections.singletonList(line)));
                     }
                 }
             }
         }
-        return repeats;
+        return elementRepeats;
     }
 
-    private void formSinglelineGroups() {
+    private static Set<Group> formSinglelineGroups(Set<String[]> allLines, Map<String, List<String[]>> elementRepeats) {
+        Set<Group> singlelineGroups = new HashSet<>();
         for (String[] line : allLines) {
             boolean uniqueElementsOnly = true;
             for (int i = 0; i < line.length; i++) {
-                if (!line[i].equals("\"\"") && repeats.get(line[i] + "_" + i).size() != 1) {
+                if (!line[i].equals("\"\"") && elementRepeats.get(line[i] + "_" + i).size() != 1) {
                     uniqueElementsOnly = false;
                     break;
                 }
             }
             if (uniqueElementsOnly) {
-                groups.add(new Group(line));
+                singlelineGroups.add(Group.of(line));
                 for (String element : line) {
-                    repeats.remove(element);
+                    elementRepeats.remove(element);
                 }
             }
         }
+        return singlelineGroups;
     }
 
-    private void formMultilineGroups() {
-        Set<String> keySet = new HashSet<>(repeats.keySet());
+    private static Set<Group> formMultilineGroups(Map<String, List<String[]>> elementRepeats) {
+        Set<Group> multilineGroups = new HashSet<>();
+        Set<String> keySet = new HashSet<>(elementRepeats.keySet());
         for (String key : keySet) {
             List<String[]> lineList = null;
-            if (repeats.containsKey(key)) {
-                lineList = new ArrayList<>(repeats.get(key));
+            if (elementRepeats.containsKey(key)) {
+                lineList = new ArrayList<>(elementRepeats.get(key));
             }
-            repeats.remove(key);
+            elementRepeats.remove(key);
             Group newGroup = new Group();
             if (lineList != null && !lineList.isEmpty()) {
                 lineList.forEach(line -> {
                     newGroup.addLine(line);
-                    getLines(line).forEach(line1 -> {
-                        newGroup.addLine(line1);
-                    });
+                    getLines(line, elementRepeats).forEach(newGroup::addLine);
                 });
-                groups.add(newGroup);
+                multilineGroups.add(newGroup);
             }
         }
+        return multilineGroups;
     }
 
-    private List<String[]> getLines(String[] line) {
+    private static List<String[]> getLines(String[] line, Map<String, List<String[]>> elementRepeats) {
         List<String[]> lines = new ArrayList<>();
         for (int i = 0; i < line.length; i++) {
             String element = line[i];
-            List<String[]> linesWithElement = repeats.get(element + "_" + i);
-            if (linesWithElement != null && !linesWithElement.isEmpty()) {
-                repeats.remove(element + "_" + i);
+            List<String[]> linesWithElement = elementRepeats.get(element + "_" + i);
+            if (CollectionUtils.isNotEmpty(linesWithElement)) {
+                elementRepeats.remove(element + "_" + i);
                 linesWithElement.forEach(line1 -> {
                     lines.add(line1);
-                    lines.addAll(getLines(line1));
+                    lines.addAll(getLines(line1, elementRepeats));
                 });
             }
         }
         return lines;
     }
-
-    /* Для тестов.
-    public Map<String, List<String[]>> countRepeats_public() {
-        return countRepeats();
-    }
-
-    public void formSinglelineGroups_public() {
-        formSinglelineGroups();
-    }
-
-    public void formMultilineGroups_public() {
-        formMultilineGroups();
-    }*/
 }

@@ -4,118 +4,92 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class GroupManagerTest {
 
-    /*@Test
-    public void countRepeats_shouldReturnCorrectMap() {
-        GroupManager groupManager = new GroupManager();
-        groupManager.setAllLines(new HashSet<>(List.of(
-                new String[]{"\"123\"","\"675\"","\"199\""},
-                new String[]{"\"444\"","\"776\"","\"999\""},
-                new String[]{"\"333\"","\"675\"","\"756\""},
-                new String[]{"\"123\"","\"621\"","\"199\""},
-                new String[]{"\"123\"","\"653\"","\"109\""}
-        )));
-        Map<String, List<String[]>> expectedResult = new HashMap<>();
-        expectedResult.put("\"123\"_0", List.of(new String[]{"\"123\"","\"675\"","\"199\""}, new String[]{"\"123\"","\"621\"","\"199\""}, new String[]{"\"123\"","\"653\"","\"109\""}));
-        expectedResult.put("\"444\"_0", new ArrayList<>(Collections.singletonList(new String[]{"\"444\"","\"776\"","\"999\""})));
-        expectedResult.put("\"333\"_0", new ArrayList<>(Collections.singletonList(new String[]{"\"333\"","\"675\"","\"756\""})));
-        expectedResult.put("\"675\"_1", List.of(new String[]{"\"123\"","\"675\"","\"199\""}, new String[]{"\"333\"","\"675\"","\"756\""}));
-        expectedResult.put("\"776\"_1", new ArrayList<>(Collections.singletonList(new String[]{"\"444\"","\"776\"","\"999\""})));
-        expectedResult.put("\"621\"_1", new ArrayList<>(Collections.singletonList(new String[]{"\"123\"","\"621\"","\"199\""})));
-        expectedResult.put("\"653\"_1", new ArrayList<>(Collections.singletonList(new String[]{"\"123\"","\"653\"","\"109\""})));
-        expectedResult.put("\"199\"_2", List.of(new String[]{"\"123\"","\"675\"","\"199\""}, new String[]{"\"123\"","\"621\"","\"199\""}));
-        expectedResult.put("\"999\"_2", new ArrayList<>(Collections.singletonList(new String[]{"\"444\"","\"776\"","\"999\""})));
-        expectedResult.put("\"756\"_2", new ArrayList<>(Collections.singletonList(new String[]{"\"333\"","\"675\"","\"756\""})));
-        expectedResult.put("\"109\"_2", new ArrayList<>(Collections.singletonList(new String[]{"\"123\"","\"653\"","\"109\""})));
+    @Test
+    public void formGroups_lineSet1_shouldReturnCorrectGroupSet() {
+        Set<String[]> allLines = FileProcessor.readAndValidateFile("src/test/resources/test_input_files/test1_incorrect_lines.txt");
+        Set<Integer> expectedSizeSet = new HashSet<>(List.of(1, 1, 1));
 
-        Map<String, List<String[]>> result = groupManager.countRepeats_public();
+        Set<Integer> actualSizeSet = GroupManager.formGroups(allLines).stream()
+                .map(Group::size)
+                .collect(Collectors.toSet());
 
-        Assertions.assertEquals(expectedResult.size(), result.size());
-        Assertions.assertTrue(expectedResult.entrySet().stream()
-                .allMatch(entry -> result.get(entry.getKey()) != null));
-    }*/
+        Assertions.assertIterableEquals(expectedSizeSet, actualSizeSet);
+    }
 
-    /*@Test
-    public void formSinglelineGroups_shouldModifyGroupSet() {
-        // Given
-        GroupManager groupManager = new GroupManager();
-        String[] arr1 = new String[]{"\"123\"", "\"675\"", "\"199\""};
-        String[] arr2 = new String[]{"\"444\"", "\"776\"","\"999\""};
-        String[] arr3 = new String[]{"\"333\"", "\"909\"", "\"756\""};
-        String[] arr4 = new String[]{"\"266\"", "\"621\"", "\"108\""};
-        String[] arr5 = new String[]{"\"123\"", "\"653\"", "\"109\""};
-        groupManager.setAllLines(new HashSet<>(List.of(arr1, arr2, arr3, arr4, arr5)));
-        Set<Group> expectedGroupSet = new HashSet<>(List.of(
-                new Group(arr2),
-                new Group(arr3),
-                new Group(arr4)
-        ));
+    @Test
+    public void formGroups_lineSet2_shouldReturnCorrectGroupSet() {
+        Set<String[]> allLines = FileProcessor.readAndValidateFile("src/test/resources/test_input_files/test2_10lines.txt");
+        Set<Integer> expectedSizeSet = new HashSet<>(List.of(8, 2));
 
-        // When
-        groupManager.countRepeats_public();
-        groupManager.formSinglelineGroups_public();
-        Set<Group> resultGroupSet = groupManager.getGroups();
+        Set<Integer> actualSizeSet = GroupManager.formGroups(allLines).stream()
+                .map(Group::size)
+                .collect(Collectors.toSet());
 
-        // Then
-        Assertions.assertIterableEquals(expectedGroupSet, resultGroupSet);
-    }*/
+        Assertions.assertIterableEquals(expectedSizeSet, actualSizeSet);
+    }
 
-    /*@Test
-    public void formSinglelineGroups_onlyMultilineGroups_shouldNotModifyGroupSet() {
-        // Given
-        GroupManager groupManager = new GroupManager();
-        Set<String[]> initialLineSet = new HashSet<>(List.of(
-                new String[]{"\"123\"","\"675\"","\"199\""},
-                new String[]{"\"444\"","\"909\"","\"999\""},
-                new String[]{"\"333\"","\"909\"","\"756\""},
-                new String[]{"\"266\"","\"621\"","\"756\""},
-                new String[]{"\"123\"","\"653\"","\"109\""}
-        ));
-        groupManager.setAllLines(initialLineSet);
+    @Test
+    public void formGroups_lineSet3_shouldReturnCorrectGroupSet() {
+        Set<String[]> allLines = FileProcessor.readAndValidateFile("src/test/resources/test_input_files/test3_20lines.txt");
+        Set<Integer> expectedSizeSet = new HashSet<>(List.of(16, 3, 1));
 
-        // When
-        groupManager.countRepeats_public();
-        groupManager.formSinglelineGroups_public();
-        Set<Group> resultGroupSet = groupManager.getGroups();
+        Set<Integer> actualSizeSet = GroupManager.formGroups(allLines).stream()
+                .map(Group::size)
+                .collect(Collectors.toSet());
 
-        // Then
-        Assertions.assertTrue(resultGroupSet.isEmpty());
-    }*/
+        Assertions.assertIterableEquals(expectedSizeSet, actualSizeSet);
+    }
 
-    /*@Test
-    public void formMultilineGroups_shouldModifyGroupSet() {
-        // Given
-        GroupManager groupManager = new GroupManager();
-        String[] line1 = new String[]{"\"123\"","\"675\"","\"199\""};
-        String[] line2 = new String[]{"\"444\"","\"909\"","\"999\""};
-        String[] line3 = new String[]{"\"333\"","\"909\"","\"756\""};
-        String[] line4 = new String[]{"\"266\"","\"621\"","\"756\""};
-        String[] line5 = new String[]{"\"123\"","\"653\"","\"109\""};
-        Set<String[]> initialLineSet = new HashSet<>(List.of(line1, line2, line3, line4, line5));
-        groupManager.setAllLines(initialLineSet);
+    @Test
+    public void formGroups_lineSet4_shouldReturnCorrectGroupSet() {
+        Set<String[]> allLines = FileProcessor.readAndValidateFile("src/test/resources/test_input_files/test4_10nonintersecting_lines.txt");
+        Set<Integer> expectedSizeSet = new HashSet<>(List.of(1, 1, 1, 1, 1, 1, 1, 1, 1, 1));
 
-        Group group1 = new Group(line1);
-        group1.addLine(line5);
-        Group group2 = new Group(line2);
-        group2.addLine(line3);
-        group2.addLine(line4);
-        Set<Group> expectedGroupSet = new HashSet<>(List.of(group1, group2));
+        Set<Integer> actualSizeSet = GroupManager.formGroups(allLines).stream()
+                .map(Group::size)
+                .collect(Collectors.toSet());
 
-        Map<String, List<String[]>> repeats = new HashMap<>();
-        repeats.put("\"123\"_0", List.of(line1, line5));
-        repeats.put("\"909\"_1", List.of(line2, line3));
-        repeats.put("\"756\"_2", List.of(line3, line4));
+        Assertions.assertIterableEquals(expectedSizeSet, actualSizeSet);
+    }
 
-        // When
-        groupManager.setRepeats(repeats);
-        groupManager.formMultilineGroups_public();
-        Set<Group> resultGroupSet = groupManager.getGroups();
+    @Test
+    public void formGroups_lineSet5_shouldReturnCorrectGroupSet() {
+        Set<String[]> allLines = FileProcessor.readAndValidateFile("src/test/resources/test_input_files/test5_20lines_10unique_lines.txt");
+        Set<Integer> expectedSizeSet = new HashSet<>(List.of(8, 2));
 
-        // Then
-        Assertions.assertEquals(expectedGroupSet.size(), resultGroupSet.size());
-        Assertions.assertIterableEquals(expectedGroupSet, resultGroupSet);
-    }*/
+        Set<Integer> actualSizeSet = GroupManager.formGroups(allLines).stream()
+                .map(Group::size)
+                .collect(Collectors.toSet());
+
+        Assertions.assertIterableEquals(expectedSizeSet, actualSizeSet);
+    }
+
+    @Test
+    public void formGroups_lineSet6_shouldReturnCorrectGroupSet() {
+        Set<String[]> allLines = FileProcessor.readAndValidateFile("src/test/resources/test_input_files/test6_20lines.txt");
+        Set<Integer> expectedSizeSet = new HashSet<>(List.of(16, 3, 1));
+
+        Set<Integer> actualSizeSet = GroupManager.formGroups(allLines).stream()
+                .map(Group::size)
+                .collect(Collectors.toSet());
+
+        Assertions.assertIterableEquals(expectedSizeSet, actualSizeSet);
+    }
+
+    @Test
+    public void formGroup_lineSet7_shouldReturnCorrectGroupSet() {
+        Set<String[]> allLines = FileProcessor.readAndValidateFile("src/test/resources/test_input_files/test7_20lines.txt");
+        Set<Integer> expectedSizeSet = new HashSet<>(List.of(15, 3, 1, 1));
+
+        Set<Integer> actualSizeSet = GroupManager.formGroups(allLines).stream()
+                .map(Group::size)
+                .collect(Collectors.toSet());
+
+        Assertions.assertIterableEquals(expectedSizeSet, actualSizeSet);
+    }
 }
 

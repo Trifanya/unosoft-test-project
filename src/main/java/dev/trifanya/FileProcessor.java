@@ -1,32 +1,38 @@
 package dev.trifanya;
 
 import java.io.*;
-import java.util.ArrayList;
+import java.nio.file.Path;
+import java.nio.file.Files;
+import java.util.Set;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 
 public class FileProcessor {
-    public static List<String> readAndValidateFile(String fileName) {
-        List<String> strings = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (lineIsValid(line)) {
-                    strings.add(line);
-                }
-            }
+    public static Set<String[]> readAndValidateFile(String fileName) {
+        try {
+            return Files.readAllLines(Path.of(fileName)).stream()
+                    .distinct()
+                    .map(s -> s.split(";"))
+                    .filter(FileProcessor::lineIsValid)
+                    .collect(Collectors.toSet());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return strings;
     }
 
-    private static boolean lineIsValid(String line) {
-        int quoteCount = line.length() - line.replace("\"", "").length();
-        int semicolonCount = line.length() - line.replace(";", "").length();
-        if (semicolonCount * 2 + 2 == quoteCount) {
-            return true;
+    private static boolean lineIsValid(String[] line) {
+        for (String s : line) {
+            if (!s.startsWith("\"") || !s.endsWith("\"")) {
+                return false;
+            }
+            String value = s.substring(1, s.length() - 1);
+            if (StringUtils.isNotBlank(value) && value.contains("\"")) {
+                return false;
+            }
         }
-        return false;
+
+        return true;
     }
 
     public static void writeToFile(String fileName, List<String> linesToWrite) {
