@@ -15,21 +15,6 @@ public class Group {
         return group;
     }
 
-    public boolean shouldContainLine(String[] line) {
-        return lines.stream()
-                .anyMatch(l -> linesHasIntersection(l, line));
-    }
-
-    private boolean linesHasIntersection(String[] firstLine, String[] secondLine) {
-        int minSize = Math.min(firstLine.length, secondLine.length);
-        for (int i = 0; i < minSize; i++) {
-            if (!firstLine[i].equals("\"\"") && firstLine[i].equals(secondLine[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void addLine(String[] line) {
         lines.add(line);
     }

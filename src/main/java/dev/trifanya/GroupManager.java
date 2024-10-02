@@ -37,7 +37,7 @@ public class GroupManager {
         Map<Element, List<String[]>> elementRepeats = new HashMap<>();
         for (String[] line : allLines) {
             for (int i = 0; i < line.length; i++) {
-                if (!line[i].equals("\"\"")) {
+                if (!line[i].isEmpty()) {
                     Element element = new Element(line[i], i);
                     if (elementRepeats.containsKey(element)) {
                         elementRepeats.get(element).add(line);
@@ -67,7 +67,7 @@ public class GroupManager {
             boolean uniqueElementsOnly = true;
             for (int i = 0; i < line.length; i++) {
                 Element curElement = new Element(line[i], i);
-                if (!curElement.getValue().equals("\"\"") && elementRepeats.get(curElement).size() != 1) {
+                if (!curElement.getValue().isEmpty() && elementRepeats.get(curElement).size() != 1) {
                     uniqueElementsOnly = false;
                     break;
                 }

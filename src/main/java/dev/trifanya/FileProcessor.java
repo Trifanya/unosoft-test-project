@@ -3,6 +3,7 @@ package dev.trifanya;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.Set;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,6 +16,7 @@ public class FileProcessor {
                     .distinct()
                     .map(s -> s.split(";"))
                     .filter(FileProcessor::lineIsValid)
+                    .map(FileProcessor::removeQuotes)
                     .collect(Collectors.toSet());
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -31,8 +33,13 @@ public class FileProcessor {
                 return false;
             }
         }
-
         return true;
+    }
+
+    private static String[] removeQuotes(String[] line) {
+        return Arrays.stream(line)
+                .map(str -> str.substring(1, str.length() - 1))
+                .toArray(String[]::new);
     }
 
     public static void writeToFile(String fileName, List<String> linesToWrite) {
