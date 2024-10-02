@@ -16,9 +16,11 @@ public class GroupManager {
      * @return - возвращает список групп
      */
     public static Set<Group> formGroups(Set<String[]> allLines) {
-        Map<String, List<String[]>> repeats = generateRepeatMap(allLines);
+        Map<Element, List<String[]>> repeats = generateRepeatMap(allLines);
         Set<Group> groups = new HashSet<>(formSinglelineGroups(allLines, repeats));
-        repeats = repeats.entrySet().stream().filter(entry -> entry.getValue().size() != 1).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+        repeats = repeats.entrySet().stream()
+                .filter(entry -> entry.getValue().size() != 1)
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         groups.addAll(formMultilineGroups(repeats));
         return groups;
     }
@@ -31,16 +33,16 @@ public class GroupManager {
      * @param allLines - строки, по которым нужно выполнить генерацию мапы повторов
      * @return - возвращает мапу повторов
      */
-    private static Map<String, List<String[]>> generateRepeatMap(Set<String[]> allLines) {
-        Map<String, List<String[]>> elementRepeats = new HashMap<>();
+    private static Map<Element, List<String[]>> generateRepeatMap(Set<String[]> allLines) {
+        Map<Element, List<String[]>> elementRepeats = new HashMap<>();
         for (String[] line : allLines) {
             for (int i = 0; i < line.length; i++) {
                 if (!line[i].equals("\"\"")) {
-                    String elementWithIndex = line[i] + "_" + i;
-                    if (elementRepeats.containsKey(elementWithIndex)) {
-                        elementRepeats.get(elementWithIndex).add(line);
+                    Element element = new Element(line[i], i);
+                    if (elementRepeats.containsKey(element)) {
+                        elementRepeats.get(element).add(line);
                     } else {
-                        elementRepeats.put(elementWithIndex, new ArrayList<>(Collections.singletonList(line)));
+                        elementRepeats.put(element, new ArrayList<>(Collections.singletonList(line)));
                     }
                 }
             }
@@ -59,20 +61,21 @@ public class GroupManager {
      * @param elementRepeats - мапа повторов
      * @return - возвращает множество всех возможных однострочных групп из allLines
      */
-    private static Set<Group> formSinglelineGroups(Set<String[]> allLines, Map<String, List<String[]>> elementRepeats) {
+    private static Set<Group> formSinglelineGroups(Set<String[]> allLines, Map<Element, List<String[]>> elementRepeats) {
         Set<Group> singlelineGroups = new HashSet<>();
         for (String[] line : allLines) {
             boolean uniqueElementsOnly = true;
             for (int i = 0; i < line.length; i++) {
-                if (!line[i].equals("\"\"") && elementRepeats.get(line[i] + "_" + i).size() != 1) {
+                Element curElement = new Element(line[i], i);
+                if (!curElement.getValue().equals("\"\"") && elementRepeats.get(curElement).size() != 1) {
                     uniqueElementsOnly = false;
                     break;
                 }
             }
             if (uniqueElementsOnly) {
                 singlelineGroups.add(Group.of(line));
-                for (String element : line) {
-                    elementRepeats.remove(element);
+                for (int i = 0; i < line.length; i++) {
+                    elementRepeats.remove(new Element(line[i], i));
                 }
             }
         }
@@ -89,13 +92,13 @@ public class GroupManager {
      *                       встречающиеся в двух и более строках.
      * @return - возвращает множество всех возможных многострочных групп
      */
-    private static Set<Group> formMultilineGroups(Map<String, List<String[]>> elementRepeats) {
+    private static Set<Group> formMultilineGroups(Map<Element, List<String[]>> elementRepeats) {
         Set<Group> multilineGroups = new HashSet<>();
-        Set<String> keySet = new HashSet<>(elementRepeats.keySet());
-        for (String key : keySet) {
+        Set<Element> keySet = new HashSet<>(elementRepeats.keySet());
+        for (Element key : keySet) {
             List<String[]> lineList = null;
             if (elementRepeats.containsKey(key)) {
-                lineList = new ArrayList<>(elementRepeats.get(key));
+                lineList = elementRepeats.get(key);
             }
             elementRepeats.remove(key);
             Group newGroup = new Group();
@@ -120,13 +123,13 @@ public class GroupManager {
      *                       встречающиеся в двух и более строках.
      * @return - возвращает список строк, входящих в группу с переданной строкой
      */
-    private static List<String[]> getLines(String[] line, Map<String, List<String[]>> elementRepeats) {
+    private static List<String[]> getLines(String[] line, Map<Element, List<String[]>> elementRepeats) {
         List<String[]> lines = new ArrayList<>();
         for (int i = 0; i < line.length; i++) {
-            String element = line[i];
-            List<String[]> linesWithElement = elementRepeats.get(element + "_" + i);
+            Element element = new Element(line[i], i);
+            List<String[]> linesWithElement = elementRepeats.get(element);
             if (CollectionUtils.isNotEmpty(linesWithElement)) {
-                elementRepeats.remove(element + "_" + i);
+                elementRepeats.remove(element);
                 linesWithElement.forEach(line1 -> {
                     lines.add(line1);
                     lines.addAll(getLines(line1, elementRepeats));
