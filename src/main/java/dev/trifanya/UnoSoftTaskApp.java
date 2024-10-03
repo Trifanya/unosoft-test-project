@@ -1,7 +1,6 @@
 package dev.trifanya;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
@@ -10,7 +9,7 @@ public class UnoSoftTaskApp {
         long startTimeMillis = System.currentTimeMillis();
         System.out.println("Program started.");
 
-        String propFileName = "D:\\java-programming\\test-tasks\\UnoSoftTestProject\\src\\main\\resources\\application.properties";
+        String propFileName = "src/main/resources/application.properties";
         String outputFile = null;
 
         try (FileInputStream fis = new FileInputStream(propFileName)) {
@@ -18,7 +17,7 @@ public class UnoSoftTaskApp {
             appProps.load(fis);
             outputFile = appProps.getProperty("result-file-name");
         } catch (IOException e) {
-            System.err.println("ОШИБКА: файл свойств отсутствует!");
+            System.err.println("ОШИБКА: файл свойств не найден!");
         }
 
         Task.solve(args[0], outputFile);
